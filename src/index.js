@@ -1,7 +1,9 @@
 import express from 'express';
 import 'dotenv/config.js';
-import rotas from './rotas/servidor.js';
+import rotas from './rotas';
+
 const app = express();
 app.use(express.json());
 app.use(rotas);
-app.listen(3000);
+const porta = process.env.PORT || 3000;
+app.listen(porta);
