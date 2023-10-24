@@ -1,5 +1,3 @@
-# Chave JWT
-src/autenticacao/
 # Logs
 logs
 *.log
