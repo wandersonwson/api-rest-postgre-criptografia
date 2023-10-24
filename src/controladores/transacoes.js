@@ -76,31 +76,31 @@ async function atualizarTransacao(request, response) {
         return response.status(500).json('Erro interno no servidor');
     }
 }
-async function listarCategorias(requestuest, responseponse) {
+async function listarCategorias(request, response) {
     try {
         const { rows } = await pool.query('select * from categorias');
-        responseponse.status(200).json(rows);
+        response.status(200).json(rows);
     } catch (error) {
-        return responseponse.status(500).json({ mensagem: 'Erro interno no servidor' });
+        return response.status(500).json({ mensagem: 'Erro interno no servidor' });
     }
 }
-async function obterExtrato(requestuest, responseponse) {
+async function obterExtrato(request, response) {
     try {
         const { rows: somaEntradas } = await pool.query(
             'select sum(valor) from transacoes where usuario_id = $1 and tipo = $2',
-            [requestuest.usuario.id, 'entrada']
+            [request.usuario.id, 'entrada']
         );
         const { rows: somaSaidas } = await pool.query(
             'select sum(valor) from transacoes where usuario_id = $1 and tipo = $2',
-            [requestuest.usuario.id, 'saida']
+            [request.usuario.id, 'saida']
         );
         const extrato = {
             'entrada': Number(somaEntradas[0].sum),
             'saída': Number(somaSaidas[0].sum)
         };
-        responseponse.status(200).json(extrato);
+        response.status(200).json(extrato);
     } catch (error) {
-        return responseponse.status(500).json({ mensagem: 'Erro interno no servidor' });
+        return response.status(500).json({ mensagem: 'Erro interno no servidor' });
     }
 }
 export {
