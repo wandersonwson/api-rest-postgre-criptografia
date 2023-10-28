@@ -1,4 +1,4 @@
-import { conexao as knex } from '../dados/conexao.js';
+import { default as knex } from '../dados/conexao.js';
 
 const transacaoRepositorio = {
     cadastrar: async function(dados) {
@@ -13,12 +13,12 @@ const transacaoRepositorio = {
         const transacao = await knex('transacoes').where({ id }).first();
         return transacao;
     },
-    buscarPorUsuario: async function(id, usuario_id) {
-        const transacao = await knex('transacoes').where({ id, usuario_id }).first();
-        return transacao;
-    },
     buscarPorCampo: async function(campo, valor) {
-        const transacao = await knex('transacoes').where(campo, valor).first();
+        const transacoes = await knex('transacoes').where(campo, valor);
+        return transacoes;
+    },
+    selecionar: async function(id, usuario_id) {
+        const transacao = await knex('transacoes').where({ id, usuario_id }).first();
         return transacao;
     },
     somarPorTipo: async function(usuario_id, tipo) {

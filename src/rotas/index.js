@@ -4,7 +4,7 @@ import rotasUsuario from './usuario.js';
 import rotasCategoria from './categoria.js';
 import rotasTransacao from './transacao.js';
 
-const rotas = express();
+const rotas = express.Router();
 
 rotas.use(rotasLogin);
 rotas.use(rotasUsuario);

@@ -1,8 +1,8 @@
-import { conexao as knex } from '../dados/conexao.js';
+import { default as knex } from '../dados/conexao.js';
 
 const usuarioRepositorio = {
     cadastrar: async function(dados) {
-        const usuario = await knex('usuarios').insert(dados, ['*']);
+        const usuario = await knex('usuarios').insert(dados, ['id', 'nome', 'email']);
         return usuario[0];
     },
     buscarTudo: async function() {
@@ -15,6 +15,10 @@ const usuarioRepositorio = {
     },
     buscarPorCampo: async function(campo, valor) {
         const usuario = await knex('usuarios').where(campo, valor).first();
+        return usuario;
+    },
+    verificarExistenciaEmail: async function(id, email) {
+        const usuario = await knex('usuarios').where('id', '<>', id).andWhere({ email }).first();
         return usuario;
     },
     atualizar: async function(dados, id) {

@@ -1,4 +1,4 @@
-import { conexao as knex } from '../dados/conexao.js';
+import { default as knex } from '../dados/conexao.js';
 
 const categoriaRepositorio = {
     cadastrar: async function(dados) {
@@ -16,6 +16,10 @@ const categoriaRepositorio = {
     buscarPorCampo: async function(campo, valor) {
         const categoria = await knex('categorias').where(campo, valor).first();
         return categoria;
+    },
+    buscarDescricao: async function(id) {
+        const categoria = await knex('categorias').where({ id }).first();
+        return categoria.descricao;
     },
     atualizar: async function(dados, id) {
         const categoria = await knex('categorias').where({ id }).update(dados, ['*']);

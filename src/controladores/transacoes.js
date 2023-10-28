@@ -1,14 +1,14 @@
-import pool from '../dados/conexao.js';
+import { categoriaRepositorio, transacaoRepositorio } from '../repositorios/index.js';
+
 async function listarTransacao(request, response) {
     const usuario_id = request.usuario.id;
     try {
-        const { rows } = await pool.query('select * from transacoes where usuario_id = $1', [usuario_id]);
-        for (const row of rows) {
-            const { rows } = await pool.query('select * from categorias where id = $1', [row.categoria_id]);
-            const categoria_nome = rows[0].descricao;
-            row.categoria_nome = categoria_nome;
+        const transacoes = transacaoRepositorio.buscarPorCampo('usuario_id', usuario_id);
+        for (const item of transacoes) {
+            item.categoria_nome = categoriaRepositorio.buscarDescricao(item.categoria_id);
+            delete item.categoria_id;
         }
-        return response.status(200).json(rows);
+        return response.status(200).json(transacoes);
     } catch (error) {
         return response.status(500).json({ mensagem: 'Erro interno no servidor' });
     }
@@ -17,16 +17,10 @@ async function cadastrarTransacao(request, response) {
     const { descricao, valor, data, categoria_id, tipo } = request.body;
     const usuario_id = request.usuario.id;
     try {
-        const { rows } = await pool.query(
-            'insert into transacoes (descricao, valor, data, categoria_id, usuario_id, tipo) values ($1, $2, $3, $4, $5, $6) returning id, descricao, valor, data, categoria_id, usuario_id, tipo',
-            [descricao, valor, data, categoria_id, usuario_id, tipo]
-        );
-        for (const row of rows) {
-            const { rows } = await pool.query('select * from categorias where id = $1', [row.categoria_id]);
-            const categoria_nome = rows[0].descricao;
-            row.categoria_nome = categoria_nome;
-        }
-        return response.status(201).json(rows);
+        const transacao = transacaoRepositorio.cadastrar({ descricao, valor, data, categoria_id, usuario_id, tipo });
+        transacao.categoria_nome = categoriaRepositorio.buscarDescricao(transacao.categoria_id);
+        delete transacao.categoria_id;
+        return response.status(201).json(transacao);
     } catch (error) {
         return response.status(500).json({ mensagem: 'Erro interno no servidor' });
     }
@@ -35,11 +29,11 @@ async function removerTransacao(request, response) {
     const { id } = request.params;
     const usuario_id = request.usuario.id;
     try {
-        const { rowCount } = await pool.query('select * from transacoes where id = $1 and usuario_id = $2', [id, usuario_id]);
-        if (rowCount < 1) {
+        const transacao = transacaoRepositorio.selecionar(id, usuario_id);
+        if (!transacao) {
             return response.status(404).json({ mensagem: 'Transação não encontrada' });
         }
-        await pool.query('delete from transacoes where id = $1', [id]);
+        transacaoRepositorio.excluir(id);
         return response.status(204).send();
     } catch (error) {
         return response.status(500).json('Erro interno no servidor');
@@ -47,13 +41,15 @@ async function removerTransacao(request, response) {
 }
 async function detalharTransacao(request, response) {
     const { id } = request.params;
-    const usuario_id = request.usuario.id;
+    const usuario_id = request.usuario.id; 
     try {
-        const { rows, rowCount } = await pool.query('select * from transacoes where id = $1 and usuario_id = $2', [id, usuario_id]);
-        if (rowCount < 1) {
+        const transacao = transacaoRepositorio.selecionar(id, usuario_id);
+        if (!transacao) {
             return response.status(404).json({ mensagem: 'Transação não encontrada' });
         }
-        return response.json(rows[0]);
+        transacao.categoria_nome = categoriaRepositorio.buscarDescricao(transacao.categoria_id);
+        delete transacao.categoria_id;
+        return response.json(transacao);
     } catch (error) {
         return response.status(500).json('Erro interno no servidor');
     }
@@ -63,40 +59,39 @@ async function atualizarTransacao(request, response) {
     const { descricao, valor, data, categoria_id, tipo } = request.body;
     const usuario_id = request.usuario.id;
     try {
-        const { rowCount } = await pool.query('select * from transacoes where id = $1 and usuario_id = $2', [id, usuario_id]);
-        if (rowCount < 1) {
+        const transacao = transacaoRepositorio.selecionar(id, usuario_id);
+        if (!transacao) {
             return response.status(404).json({ mensagem: 'Transação não encontrada' });
         }
-        await pool.query(
-            'update transacoes set descricao = $1, valor = $2, data = $3, categoria_id = $4, tipo = $5 where id = $6',
-            [descricao, valor, data, categoria_id, tipo, id]
-        );
-        return response.status(204).send();
+        const transacaoAtualizada = transacaoRepositorio.atualizar({ descricao, valor, data, categoria_id, tipo }, id);
+        return response.status(200).send(transacaoAtualizada);
     } catch (error) {
         return response.status(500).json('Erro interno no servidor');
     }
 }
 async function listarCategorias(request, response) {
     try {
-        const { rows } = await pool.query('select * from categorias');
-        response.status(200).json(rows);
+        const categorias = categoriaRepositorio.buscarTudo();
+        response.status(200).json(categorias);
     } catch (error) {
         return response.status(500).json({ mensagem: 'Erro interno no servidor' });
     }
 }
 async function obterExtrato(request, response) {
     try {
-        const { rows: somaEntradas } = await pool.query(
-            'select sum(valor) from transacoes where usuario_id = $1 and tipo = $2',
-            [request.usuario.id, 'entrada']
-        );
-        const { rows: somaSaidas } = await pool.query(
-            'select sum(valor) from transacoes where usuario_id = $1 and tipo = $2',
-            [request.usuario.id, 'saida']
-        );
+        // const { rows: entradas } = await pool.query(
+        //     'select sum(valor) from transacoes where usuario_id = $1 and tipo = $2',
+        //     [request.usuario.id, 'entrada']
+        // );
+        const somaEntradas = transacaoRepositorio.somarPorTipo(request.usuario.id, 'entrada');
+        // const { rows: saidas } = await pool.query(
+        //     'select sum(valor) from transacoes where usuario_id = $1 and tipo = $2',
+        //     [request.usuario.id, 'saida']
+        // );
+        const somaSaidas = transacaoRepositorio.somarPorTipo(request.usuario.id, 'saida');
         const extrato = {
-            'entrada': Number(somaEntradas[0].sum),
-            'saída': Number(somaSaidas[0].sum)
+            'entrada': Number(somaEntradas),
+            'saída': Number(somaSaidas)
         };
         response.status(200).json(extrato);
     } catch (error) {
