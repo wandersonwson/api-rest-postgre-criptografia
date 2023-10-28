@@ -6,7 +6,7 @@ const chave = process.env.JWT_KEY;
 async function login(request, response) {
     const { email, senha } = request.body;
     try {
-        const usuario = usuarioRepositorio.buscarPorCampo('email', email);
+        const usuario = await usuarioRepositorio.buscarPorCampo('email', email);
         const senhaValida = await bcrypt.compare(senha, usuario.senha);
         if(!senhaValida) {
             return response.status(400).json({ mensgaem: 'Usuário e/ou senha inválido(s).' });
@@ -22,7 +22,7 @@ async function cadastrarUsuario(request, response) {
     const { nome, email, senha } = request.body;
     try {
         const senhaCifrada = await bcrypt.hash(senha, 10);
-        const usuario = usuarioRepositorio.cadastrar({ nome, email, senha: senhaCifrada });
+        const usuario = await usuarioRepositorio.cadastrar({ nome, email, senha: senhaCifrada });
         return response.status(201).json(usuario);
     } catch (error) {
         return response.status(500).json({ mensagem: 'Erro interno no servidor' });
@@ -35,7 +35,7 @@ async function atualizarUsuario(request, response) {
     const { nome, email, senha } = request.body;
     try {
         const senhaCifrada = await bcrypt.hash(senha, 10);
-        const usuario = usuarioRepositorio.atualizar({nome, email, senha: senhaCifrada }, request.usuario.id);
+        const usuario = await usuarioRepositorio.atualizar({nome, email, senha: senhaCifrada }, request.usuario.id);
         return response.status(201).json(usuario);
     } catch (error) {
         return response.status(500).json({ mensagem: 'Erro interno no servidor' });

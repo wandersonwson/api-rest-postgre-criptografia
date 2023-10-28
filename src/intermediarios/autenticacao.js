@@ -10,7 +10,7 @@ const validarToken = async (request, response, next) => {
     const token = authorization.split(" ")[1];
     try {
         const { id } = jwt.verify(token, chave);
-        const usuario = usuarioRepositorio.buscarPorId(id);
+        const usuario = await usuarioRepositorio.buscarPorId(id);
         if (!usuario) {
             return response.status(401).json({ mensagem: "Para acessar este recurso um token de autenticação válido deve ser enviado." });
         }

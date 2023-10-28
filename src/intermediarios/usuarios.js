@@ -6,7 +6,7 @@ async function validarDadosLogin(request, response, next) {
         if (!email || !senha) {
             return response.status(400).json({ mensagem: 'Os campos email e senha são obrigatórios.' });
         }
-        const usuario = usuarioRepositorio.buscarPorCampo('email', email);
+        const usuario = await usuarioRepositorio.buscarPorCampo('email', email);
         if (!usuario) {
             return response.status(400).json({ mensagem: 'Usuário e/ou senha inválido(s).' });
         }
@@ -21,7 +21,7 @@ async function validarDadosUsuario(request, response, next) {
         if (!nome || !email || !senha) {
             return response.status(400).json({ mensagem: 'Todos os campos são obrigatórios.' });
         }
-        const usuario = usuarioRepositorio.buscarPorCampo('email', email);
+        const usuario = await usuarioRepositorio.buscarPorCampo('email', email);
         if (usuario) {
             return response.status(400).json({ mensagem: 'Já existe um usuário cadastrado com o email informado.' });
         }
@@ -36,7 +36,7 @@ async function validarAtualizacaoUsuario(request, response, next) {
         if (!nome || !email || !senha) {
             return response.status(400).json({ mensagem: 'Todos os campos são obrigatórios.' });
         }
-        const usuario = usuarioRepositorio.verificarExistenciaEmail(request.usuario.id, email);
+        const usuario = await usuarioRepositorio.verificarExistenciaEmail(request.usuario.id, email);
         if (usuario) {
             return response.status(400).json({ mensagem: 'O e-mail informado já está sendo utilizado por outro usuário.' });
         }

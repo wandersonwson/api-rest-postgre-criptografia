@@ -5,7 +5,7 @@ async function validarDadosTransacao(request, response, next) {
     if (!descricao || !valor || !data || !categoria_id || !tipo) {
         return response.status(400).json({ mensagem: "Todos os campos são obrigatórios." });
     }
-    const categoria = categoriaRepositorio.buscarPorId(categoria_id);
+    const categoria = await categoriaRepositorio.buscarPorId(categoria_id);
     if (!categoria) {
         return response.status(400).json({ mensagem: 'Categoria inválida.' });
     }
