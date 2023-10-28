@@ -40,3 +40,12 @@ Para o armazenamento de dados foi criado um banco de dados PostgreSQL chamado `d
     -   tipo
 
 As categorias foram previamente cadastradas. O arquivo database.sql contém o script utilizado para a criação das tabelas e a inserção das categorias.
+
+#### Bibliotecas
+
+- Servidor: [Express](https://www.npmjs.com/package/express);
+- Criptografia: [Bcrypt](https://www.npmjs.com/package/bcrypt);
+- Autenticação: [JWT](https://www.npmjs.com/package/jsonwebtoken);
+- Banco de dados: [PG](https://www.npmjs.com/package/pg);
+- QueryBuilder: [Knex](https://www.npmjs.com/package/knex);
+- Variáveis de ambiente: [Dotenv](https://www.npmjs.com/package/dotenv).
